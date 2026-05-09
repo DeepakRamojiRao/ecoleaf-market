@@ -10,7 +10,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      # Host port shifted to avoid collisions with a local Postgres install.
+      # Inside the docker network the service is still reachable as db:5432.
+      - "55432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecomart}"]
       interval: 5s
@@ -20,7 +22,9 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      # Host port shifted to avoid collisions with local redis. Inside the
+      # docker network the service is still reachable as redis:6379.
+      - "56379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

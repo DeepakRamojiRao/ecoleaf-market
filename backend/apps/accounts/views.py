@@ -10,7 +10,7 @@ Auth + onboarding endpoints.
   POST /api/v1/auth/onboarding/  -> user (with is_onboarded=True)
 """
 from django.contrib.auth import get_user_model
-from rest_framework import generics, permissions, status
+from rest_framework import filters, generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
@@ -97,3 +97,18 @@ class OnboardingView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+
+class AdminCustomersView(generics.ListAPIView):
+    """Admin-only list of registered users (for the Customers page)."""
+
+    serializer_class = UserSerializer
+    permission_classes = (permissions.IsAdminUser,)
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ("email", "full_name", "phone")
+    ordering_fields = ("created_at", "email", "full_name")
+    ordering = ("-created_at",)
+
+    def get_queryset(self):
+        # Customers are non-staff users. Admins manage themselves separately.
+        return User.objects.filter(is_staff=False)

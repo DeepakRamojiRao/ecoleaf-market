@@ -48,7 +48,9 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "apps.core",
     "apps.accounts",
-    # Future modules: catalog, cart, orders, bulk_orders, notifications
+    "apps.suppliers",
+    "apps.catalog",
+    # Future modules: cart, orders, bulk_orders, notifications
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

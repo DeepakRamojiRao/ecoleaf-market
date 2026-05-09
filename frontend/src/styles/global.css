@@ -36,8 +36,7 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Soft page-wide gradient used on auth + landing pages.
-   Apply with `class="page-gradient"`. */
+/* Soft page-wide gradient used on landing/storefront pages. */
 .page-gradient {
   background: linear-gradient(
     135deg,
@@ -45,4 +44,43 @@ body {
     #ffffff 45%,
     #eff6ff 100%
   );
+}
+
+/* ─── Banana-leaf animations for the auth background ───────────────── */
+
+/* Gentle pendulum sway — pivot on a top anchor for that hanging-leaf feel. */
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(var(--leaf-rot, 0deg)) translateY(0); }
+  50%      { transform: rotate(calc(var(--leaf-rot, 0deg) + 6deg)) translateY(-6px); }
+}
+
+/* Vertical bob — slow up-and-down drift used for loose floating leaves. */
+@keyframes leaf-float {
+  0%, 100% { transform: translateY(0) rotate(var(--leaf-rot, 0deg)); }
+  50%      { transform: translateY(-18px) rotate(calc(var(--leaf-rot, 0deg) - 4deg)); }
+}
+
+/* Long horizontal drift across the canvas — used sparingly for one or two leaves. */
+@keyframes leaf-drift-x {
+  0%   { transform: translate(-30px, 0) rotate(var(--leaf-rot, 0deg)); opacity: 0; }
+  10%  { opacity: 0.55; }
+  50%  { transform: translate(40px, -20px) rotate(calc(var(--leaf-rot, 0deg) + 8deg)); opacity: 0.7; }
+  90%  { opacity: 0.55; }
+  100% { transform: translate(120px, 10px) rotate(calc(var(--leaf-rot, 0deg) + 14deg)); opacity: 0; }
+}
+
+/* Slow ambient rotation for the largest backdrop leaves. */
+@keyframes leaf-spin-slow {
+  from { transform: rotate(var(--leaf-rot, 0deg)); }
+  to   { transform: rotate(calc(var(--leaf-rot, 0deg) + 360deg)); }
+}
+
+/* Background mesh pulse — pans the radial-gradient stops gently. */
+@keyframes mesh-pan {
+  0%, 100% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+  50%      { background-position: 5% 4%, 95% 96%, 55% 45%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaf-anim { animation: none !important; }
 }
