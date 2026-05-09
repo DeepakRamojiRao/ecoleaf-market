@@ -1,0 +1,16 @@
+-r base.txt
+
+# WSGI server
+gunicorn==23.0.0
+
+# Static files (compressed, hashed) without nginx serving them
+whitenoise==6.8.2
+
+# Async tasks (used in Module 7 for WhatsApp dispatch + retries)
+celery==5.4.0
+
+# Object storage for product images in prod
+django-storages[s3]==1.14.4
+
+# Error tracking
+sentry-sdk==2.19.2

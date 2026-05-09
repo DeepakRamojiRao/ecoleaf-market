@@ -1,0 +1,50 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ===== Django =====
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/backend/media/
+/backend/staticfiles/
+
+# ===== Environment files (never commit secrets) =====
+.env
+.env.local
+.env.*.local
+
+# ===== Node / Vite =====
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+.npm/
+.pnpm-store/
+
+# ===== Testing / coverage =====
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
+# ===== IDE / OS =====
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ===== Docker volumes =====
+.docker/
