@@ -20,7 +20,8 @@ from drf_spectacular.views import (
 
 api_v1_patterns = [
     path("", include("apps.core.urls")),
-    # Future: path("auth/", include("apps.accounts.urls")), etc.
+    path("auth/", include("apps.accounts.urls")),
+    # Future: catalog/, cart/, orders/, bulk-orders/, etc.
 ]
 
 urlpatterns = [

@@ -47,7 +47,8 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "apps.core",
-    # Future modules: accounts, catalog, cart, orders, bulk_orders, notifications
+    "apps.accounts",
+    # Future modules: catalog, cart, orders, bulk_orders, notifications
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -86,27 +87,42 @@ TEMPLATES = [
 ]
 
 # ---------------------------------------------------------------------------
-# Database — Postgres in all envs (dev runs against docker-compose Postgres)
+# Database — Postgres in Docker / prod; SQLite fallback for native dev runs
+# without external services. Override via DATABASE_URL in .env.
 # ---------------------------------------------------------------------------
-DATABASES = {"default": env.db("DATABASE_URL")}
+_database_url = env("DATABASE_URL", default="").strip()
+if _database_url:
+    DATABASES = {"default": env.db_url_config(_database_url)}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": str(BASE_DIR / "db.sqlite3"),
+        }
+    }
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 
 # ---------------------------------------------------------------------------
-# Cache — Redis
+# Cache — Redis when REDIS_URL is set, otherwise an in-process LocMem cache.
+# LocMem is fine for single-process dev work; never use it in prod.
 # ---------------------------------------------------------------------------
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": env("REDIS_URL"),
+_redis_url = env("REDIS_URL", default="")
+if _redis_url:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": _redis_url,
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"},
+    }
 
 # ---------------------------------------------------------------------------
 # Auth & passwords
 # ---------------------------------------------------------------------------
-# Custom user model is wired up in Module 2 (apps.accounts.User). Keep this
-# setting commented until that app exists; Django checks it at startup.
-# AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = "accounts.User"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
