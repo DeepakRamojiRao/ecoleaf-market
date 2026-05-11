@@ -67,6 +67,13 @@ class Product(TimeStampedModel):
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     stock_quantity = models.PositiveIntegerField(default=0)
     low_stock_threshold = models.PositiveIntegerField(default=10)
+    # Uploaded file (preferred). Saved under MEDIA_ROOT/products/<YYYY>/<MM>/.
+    image = models.ImageField(
+        upload_to="products/%Y/%m/", blank=True, null=True,
+    )
+    # Legacy / fallback. Used when there's no uploaded file (e.g. seed data
+    # that references an external CDN). The frontend reads `image_display_url`
+    # which resolves to whichever is set.
     image_url = models.URLField(blank=True)
     is_active = models.BooleanField(default=True)
 

@@ -326,7 +326,7 @@ function ProductCard({ product }: { product: Product }) {
     >
       <div className="relative aspect-square overflow-hidden bg-stone-100">
         <img
-          src={product.image_url || DEFAULT_PRODUCT_IMAGE}
+          src={product.image_display_url || DEFAULT_PRODUCT_IMAGE}
           alt=""
           loading="lazy"
           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"

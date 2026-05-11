@@ -3,6 +3,7 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { ImagePicker } from "@/components/admin/ImagePicker";
 import { Modal } from "@/components/admin/Modal";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { DataTable, type Column } from "@/components/admin/DataTable";
@@ -99,9 +100,9 @@ export default function ProductsPage() {
       header: "Image",
       width: "70px",
       render: (r) =>
-        r.image_url ? (
+        r.image_display_url ? (
           <img
-            src={r.image_url}
+            src={r.image_display_url}
             alt=""
             className="h-10 w-10 rounded-md object-cover ring-1 ring-stone-200"
           />
@@ -292,6 +293,11 @@ function ProductForm({
   submitLabel?: string;
   isSubmitting?: boolean;
 }) {
+  // The image input lives outside react-hook-form — File objects aren't
+  // serialisable the way RHF wants. We track it here and pass it through
+  // to the submit payload alongside the rest of the fields.
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -307,7 +313,6 @@ function ProductForm({
       cost: initial?.cost ?? "0.00",
       stock_quantity: initial?.stock_quantity ?? 0,
       low_stock_threshold: initial?.low_stock_threshold ?? 10,
-      image_url: initial?.image_url ?? "",
       is_active: initial?.is_active ?? true,
     },
   });
@@ -326,7 +331,9 @@ function ProductForm({
       cost: String(values.cost ?? "0"),
       stock_quantity: Number(values.stock_quantity ?? 0),
       low_stock_threshold: Number(values.low_stock_threshold ?? 10),
-      image_url: values.image_url?.trim() ?? "",
+      // Only included when the user picked a file; omitting leaves the
+      // existing image untouched on PATCH.
+      ...(imageFile ? { image: imageFile } : {}),
       is_active: !!values.is_active,
     });
   });
@@ -457,17 +464,12 @@ function ProductForm({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-semibold text-stone-800">
-          Image URL
-        </label>
-        <input
-          type="url"
-          {...register("image_url")}
-          className="mt-1 h-11 w-full rounded-lg border border-stone-200 bg-white px-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-          placeholder="https://…/product.jpg"
-        />
-      </div>
+      <ImagePicker
+        existingUrl={
+          initial?.image_display_url || initial?.image_url || null
+        }
+        onChange={setImageFile}
+      />
 
       <label className="flex items-center gap-2 text-sm text-stone-700">
         <input

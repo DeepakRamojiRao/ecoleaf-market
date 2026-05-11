@@ -1,7 +1,12 @@
 /**
  * Typed wrappers around /api/v1/catalog/*
  *   - categories : full CRUD
- *   - products   : full CRUD
+ *   - products   : full CRUD (with optional file upload for product image)
+ *
+ * Image upload: pass `image: File` on ProductWriteInput to send the request
+ * as multipart/form-data instead of JSON. The backend stores the file under
+ * MEDIA_ROOT/products/ and returns the resolved absolute URL via
+ * `image_display_url` (which falls back to the legacy `image_url`).
  */
 import { api } from "@/lib/api";
 
@@ -50,7 +55,12 @@ export type Product = {
   cost: string;
   stock_quantity: number;
   low_stock_threshold: number;
+  /** Uploaded file's storage path (e.g. "products/2026/05/foo.jpg") or null. */
+  image: string | null;
+  /** Legacy URL field — kept for backward-compat seed data. */
   image_url: string;
+  /** Read-only — absolute URL the frontend should use to display the image. */
+  image_display_url: string;
   is_active: boolean;
   is_low_stock?: boolean;
   created_at: string;
@@ -67,6 +77,9 @@ export type ProductWriteInput = {
   cost?: string;
   stock_quantity?: number;
   low_stock_threshold?: number;
+  /** New uploaded file. If set, the request is sent as multipart/form-data. */
+  image?: File | null;
+  /** Legacy URL — only used if no file is uploaded. */
   image_url?: string;
   is_active?: boolean;
 };
@@ -77,6 +90,33 @@ type ListParams = {
   page?: number;
   page_size?: number;
 };
+
+/** Serialize an input object to FormData, coercing primitives the way DRF expects. */
+function toFormData(input: Record<string, unknown>): FormData {
+  const fd = new FormData();
+  for (const [key, value] of Object.entries(input)) {
+    if (value === undefined) continue;
+    if (value instanceof File) {
+      fd.append(key, value);
+      continue;
+    }
+    if (value === null) {
+      // DRF treats empty string as null for nullable FKs / blankable fields.
+      fd.append(key, "");
+      continue;
+    }
+    if (typeof value === "boolean") {
+      fd.append(key, value ? "true" : "false");
+      continue;
+    }
+    fd.append(key, String(value));
+  }
+  return fd;
+}
+
+function containsFile(input: object): boolean {
+  return Object.values(input).some((v) => v instanceof File);
+}
 
 export const categoriesApi = {
   list: (params?: ListParams & { parent?: string | number }) =>
@@ -111,12 +151,22 @@ export const productsApi = {
   },
   retrieve: (id: number) =>
     api.get<Product>(`/catalog/products/${id}/`).then((r) => r.data),
-  create: (input: ProductWriteInput) =>
-    api.post<Product>("/catalog/products/", input).then((r) => r.data),
-  update: (id: number, input: Partial<ProductWriteInput>) =>
-    api
-      .patch<Product>(`/catalog/products/${id}/`, input)
-      .then((r) => r.data),
+  create: (input: ProductWriteInput) => {
+    const body = containsFile(input)
+      ? toFormData(input as Record<string, unknown>)
+      : input;
+    return api
+      .post<Product>("/catalog/products/", body)
+      .then((r) => r.data);
+  },
+  update: (id: number, input: Partial<ProductWriteInput>) => {
+    const body = containsFile(input)
+      ? toFormData(input as Record<string, unknown>)
+      : input;
+    return api
+      .patch<Product>(`/catalog/products/${id}/`, body)
+      .then((r) => r.data);
+  },
   remove: (id: number) =>
     api.delete(`/catalog/products/${id}/`).then(() => undefined),
 };

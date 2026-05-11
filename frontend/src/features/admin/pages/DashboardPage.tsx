@@ -407,9 +407,9 @@ export default function DashboardPage() {
               className="flex items-center justify-between py-2.5 text-sm"
             >
               <div className="min-w-0 flex items-center gap-3">
-                {p.image_url ? (
+                {p.image_display_url ? (
                   <img
-                    src={p.image_url}
+                    src={p.image_display_url}
                     alt=""
                     className="h-9 w-9 shrink-0 rounded-md object-cover ring-1 ring-stone-200"
                   />

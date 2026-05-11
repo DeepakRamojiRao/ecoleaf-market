@@ -6,6 +6,7 @@ Both expose full CRUD. Lists support search (?search=term) and ordering
 """
 from django.db.models import Count, F
 from rest_framework import filters, viewsets
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 
 from .models import Category, Product
 from .permissions import IsAdminOrReadOnly
@@ -36,6 +37,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    # Accept JSON, urlencoded forms, and multipart (file uploads).
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
     search_fields = ("sku", "name", "description")
     ordering_fields = (

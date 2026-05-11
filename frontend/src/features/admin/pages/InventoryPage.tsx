@@ -35,9 +35,9 @@ export default function InventoryPage() {
       header: "Image",
       width: "70px",
       render: (r) =>
-        r.image_url ? (
+        r.image_display_url ? (
           <img
-            src={r.image_url}
+            src={r.image_display_url}
             alt=""
             className="h-10 w-10 rounded-md object-cover ring-1 ring-stone-200"
           />
